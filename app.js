@@ -28,7 +28,7 @@ sql.connect(dbConfig).then((pool) => {
         res.send('¡Servidor funcionando correctamente con SQL Server!');
     });
 
-    /*** CRUD para TiposEvento (Catálogo) ***/
+    /* CRUD para TiposEvento (Catálogo) */
     // Crear un tipo de evento
     app.post('/tipos-evento', async (req, res) => {
         const { nombre, descripcion } = req.body;
@@ -47,7 +47,7 @@ sql.connect(dbConfig).then((pool) => {
     // Obtener todos los tipos de evento
     app.get('/tipos-evento', async (req, res) => {
         try {
-            const result = await pool.request().query('SELECT nombre FROM Kv_TiposEvento');
+            const result = await pool.request().query('SELECT * FROM Kv_TiposEvento');
             res.json(result.recordset);
         } catch (err) {
             console.error('Error al obtener los tipos de evento:', err);
@@ -86,7 +86,7 @@ sql.connect(dbConfig).then((pool) => {
         }
     });
 
-    /*** CRUD para EventosCorporativos (Maestro) ***/
+    /* CRUD para EventosCorporativos (Maestro) */
     // Crear un evento corporativo
     app.post('/eventos', async (req, res) => {
         const { nombre, fecha, idTipoEvento, ubicacion, descripcion } = req.body;
@@ -154,7 +154,7 @@ sql.connect(dbConfig).then((pool) => {
         }
     });
 
-    /*** CRUD para AsistentesEvento (Detalle) ***/
+    /* CRUD para AsistentesEvento (Detalle) */
     // Crear un asistente al evento
     app.post('/asistentes', async (req, res) => {
         const { idEvento, nombre, correoElectronico, telefono, idRol } = req.body;
@@ -240,7 +240,7 @@ sql.connect(dbConfig).then((pool) => {
     console.error('Error al conectar a SQL Server:', err);
 });
 
-const PORT = process.env.PORT || 3009;
+const PORT = 3009;
 app.listen(PORT, () => {
-    console.log(`Servidor ejecutándose en el puerto ${PORT}`);
+    console.log('Servidor ejecutándose en el puerto ${PORT}');
 });
