@@ -155,39 +155,71 @@ sql.connect(dbConfig).then((pool) => {
     });
 
     /* CRUD para AsistentesEvento (Detalle) */
-    // Crear un asistente al evento
-    app.post('/asistentes', async (req, res) => {
-        const { idEvento, nombre, correoElectronico, telefono, idRol } = req.body;
-    
-        try {
-            // Intenta insertar el asistente
-            const result = await pool.request()
-                .input('idEvento', sql.Int, idEvento)
-                .input('nombre', sql.VarChar(100), nombre)
-                .input('correoElectronico', sql.VarChar(100), correoElectronico)
-                .input('telefono', sql.VarChar(15), telefono)
-                .input('idRol', sql.Int, idRol)
-                .query(`INSERT INTO Kv_AsistentesEvento 
-                        (idEvento, nombre, correoElectronico, telefono, idRol)
-                        OUTPUT INSERTED.idAsistente
-                        VALUES (@idEvento, @nombre, @correoElectronico, @telefono, @idRol)`);
-    
-            res.status(201).json({
-                idAsistente: result.recordset[0].idAsistente,
-                idEvento,
-                nombre,
-                correoElectronico,
-                telefono,
-                idRol
-            });
-        } catch (err) {
-            if (err.originalError && err.originalError.info && err.originalError.info.message.includes('FOREIGN KEY constraint')) {
-                return res.status(400).json({ message: 'El idRol no existe en la tabla Kv_RolesAsistentes. Verifica los roles disponibles.' });
-            }
-            console.error('Error al crear el asistente:', err);
-            res.status(500).json({ message: 'Error al crear el asistente', error: err.message });
-        }
-    });
+// Crear un asistente al evento
+app.post('/asistentes', async (req, res) => {
+    const { idEvento, nombre, correoElectronico, telefono, direccion, idRol } = req.body;
+    try {
+        const result = await pool.request()
+            .input('idEvento', sql.Int, idEvento)
+            .input('nombre', sql.VarChar(100), nombre)
+            .input('correoElectronico', sql.VarChar(100), correoElectronico)
+            .input('telefono', sql.VarChar(15), telefono)
+            .input('direccion', sql.VarChar(255), direccion)
+            .input('idRol', sql.Int, idRol)
+            .query(`INSERT INTO Kv_AsistentesEvento 
+                    (idEvento, nombre, correoElectronico, telefono, direccion, idRol)
+                    OUTPUT INSERTED.idAsistente
+                    VALUES (@idEvento, @nombre, @correoElectronico, @telefono, @direccion, @idRol)`);
+        res.status(201).json({
+            idAsistente: result.recordset[0].idAsistente,
+            idEvento,
+            nombre,
+            correoElectronico,
+            telefono,
+            direccion,
+            idRol
+        });
+    } catch (err) {
+        console.error('Error al crear el asistente:', err);
+        res.status(500).json({ message: 'Error al crear el asistente', error: err.message });
+    }
+});
+
+// Obtener todos los asistentes
+app.get('/asistentes', async (req, res) => {
+    try {
+        const result = await pool.request().query('SELECT * FROM Kv_AsistentesEvento');
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('Error al obtener los asistentes:', err);
+        res.status(500).send('Error al obtener los asistentes');
+    }
+});
+
+// Actualizar un asistente
+app.put('/asistentes/:id', async (req, res) => {
+    const { id } = req.params;
+    const { idEvento, nombre, correoElectronico, telefono, direccion, idRol } = req.body;
+    try {
+        const result = await pool.request()
+            .input('idAsistente', sql.Int, id)
+            .input('idEvento', sql.Int, idEvento)
+            .input('nombre', sql.VarChar(100), nombre)
+            .input('correoElectronico', sql.VarChar(100), correoElectronico)
+            .input('telefono', sql.VarChar(15), telefono)
+            .input('direccion', sql.VarChar(255), direccion)
+            .input('idRol', sql.Int, idRol)
+            .query(`UPDATE Kv_AsistentesEvento 
+                    SET idEvento = @idEvento, nombre = @nombre, correoElectronico = @correoElectronico, 
+                        telefono = @telefono, direccion = @direccion, idRol = @idRol 
+                    WHERE idAsistente = @idAsistente`);
+        res.json({ message: 'Asistente actualizado correctamente' });
+    } catch (err) {
+        console.error('Error al actualizar el asistente:', err);
+        res.status(500).send('Error al actualizar el asistente');
+    }
+});
+
 
     // Obtener todos los asistentes
     app.get('/asistentes', async (req, res) => {
